@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FileText, BrainCircuit, LineChart, LogOut, Menu, X, Video, Sparkles } from 'lucide-react';
+import { LayoutDashboard, FileText, BrainCircuit, LineChart, LogOut, Menu, X, Video, Sparkles, Compass, Briefcase } from 'lucide-react';
 import { useState } from 'react';
 
 const Navbar = () => {
@@ -11,10 +11,12 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Tess AI', path: '/tess', icon: Sparkles, badge: 'Copilot' },
+    { name: 'Career Plan', path: '/career-plan', icon: Compass, badge: 'New' },
     { name: 'Resume AI', path: '/resume', icon: FileText },
-    { name: 'Quiz Gen', path: '/quiz', icon: BrainCircuit },
+    { name: 'JD Tracker', path: '/applications', icon: Briefcase },
     { name: 'AI Interview', path: '/interview', icon: Video },
+    { name: 'Quiz Gen', path: '/quiz', icon: BrainCircuit },
+    { name: 'Tess AI', path: '/tess', icon: Sparkles, badge: 'Copilot' },
     { name: 'Progress', path: '/progress', icon: LineChart },
   ];
 

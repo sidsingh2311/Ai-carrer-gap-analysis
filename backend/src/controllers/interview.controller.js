@@ -3,66 +3,125 @@ import {
   generateQuestions,
   evaluateAnswer,
 } from "../services/interview.service.js"; 
-import { ingestInterviewResult } from "../services/tess.service.js"; 
+import { ingestInterviewResult, createMemory } from "../services/tess.service.js"; 
  
-// creating the function of starting the interview 
-export const startInterview = async (req , res) => {
-    try{
-          const {role,skills,level,company} = req.body;
-          // calling the generate question services from the groq ai
-          const questions = await generateQuestions(role,skills,level);
-          const interview = await Interview.create({
-             user: req.user._id,
-             role,
-             company,
-             skills,
-             level,
-             questions,
-          }) 
+// Start a new mock interview session with mode support
+export const startInterview = async (req, res) => {
+    try {
+        const { role, skills, level, company, mode } = req.body;
 
-          return res.status(200).json({
-            succes:true,
-            message: "started the interview",
+        if (!role) {
+            return res.status(400).json({
+                success: false,
+                message: "Role is required to start an interview"
+            });
+        }
+
+        const selectedMode = mode || "general";
+
+        // Generate questions from Groq AI
+        const questions = await generateQuestions(role, skills, level || "intermediate", selectedMode);
+
+        const interview = await Interview.create({
+            user: req.user._id,
+            role,
+            company: company || "Top Tech",
+            skills: Array.isArray(skills) ? skills : (skills ? [skills] : []),
+            level: level || "intermediate",
+            mode: selectedMode,
+            questions,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Started the interview",
             data: interview
-          })
-    }
-    catch(error) {
-        console.log(error.message);
+        });
+    } catch (error) {
+        console.error("Start interview error:", error);
         return res.status(500).json({
-            success:false,
-            message: "error in starting the interview",
+            success: false,
+            message: "Error starting the interview",
+            error: error.message,
             data: {}
-        })
+        });
     }
-}  
+};
 
-// creating the function to submit the answer
-export const submitAnswer = async (req , res) => {
-    try{
-          const {interviewId,userAnswer} = req.body;
-          // finding the interview by the interview Id
-          const interview = await Interview.findById(interviewId);
-          const index = interview.currentQuestionIndex;
-          const currentQuestion = interview.questions[index];
-           
-          // sending the current question response to the ai to eveluate
-          const evaluation = await evaluateAnswer(
+// Submit an answer to the current question
+export const submitAnswer = async (req, res) => {
+    try {
+        const { interviewId, userAnswer } = req.body;
+        const interview = await Interview.findById(interviewId);
+
+        if (!interview) {
+            return res.status(404).json({
+                success: false,
+                message: "Interview not found"
+            });
+        }
+
+        const index = interview.currentQuestionIndex;
+        const currentQuestion = interview.questions[index];
+
+        if (!currentQuestion) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid question index"
+            });
+        }
+
+        // Evaluate answer with 5-pillar analytics and mode support
+        const evaluation = await evaluateAnswer(
             currentQuestion.question,
-            currentQuestion.answer,
-            userAnswer    
-        ) 
+            currentQuestion.idealAnswer || currentQuestion.answer,
+            userAnswer,
+            interview.mode || "general"
+        );
 
-        // saving the data to the databse
-        currentQuestion.userAnswer = userAnswer;
+        // Save question feedback and granular metrics
+        currentQuestion.userAnswer = userAnswer || "";
         currentQuestion.feedback = evaluation.feedback;
         currentQuestion.score = evaluation.score;
+        currentQuestion.metrics = evaluation.metrics;
+        currentQuestion.starBreakdown = evaluation.starBreakdown;
+        currentQuestion.keyStrengths = evaluation.keyStrengths;
+        currentQuestion.areasForImprovement = evaluation.areasForImprovement;
 
-        // once this question processing is completed moving on the the next quesiont 
-        interview.currentQuestionIndex=interview.currentQuestionIndex+1;
-        // checking if all the quesiton have been finished
-        if(interview.currentQuestionIndex>=interview.questions.length) {
-            interview.status = "completed"
-            // savking the current interview state in the databse 
+        // Move to next question
+        interview.currentQuestionIndex = interview.currentQuestionIndex + 1;
+
+        // Check if all questions are finished
+        if (interview.currentQuestionIndex >= interview.questions.length) {
+            interview.status = "completed";
+
+            // Calculate overall averages across questions
+            const totalQuestions = interview.questions.length;
+            let sumScore = 0;
+            let sumAccuracy = 0;
+            let sumClarity = 0;
+            let sumStructure = 0;
+            let sumCompleteness = 0;
+            let sumConfidence = 0;
+
+            interview.questions.forEach((q) => {
+                sumScore += q.score || 0;
+                sumAccuracy += q.metrics?.accuracy || q.score || 0;
+                sumClarity += q.metrics?.clarity || 7;
+                sumStructure += q.metrics?.structure || 7;
+                sumCompleteness += q.metrics?.completeness || 6;
+                sumConfidence += q.metrics?.confidence || 7;
+            });
+
+            interview.overallScore = Math.round((sumScore / (totalQuestions * 10)) * 100);
+            interview.categoryAverages = {
+                accuracy: parseFloat((sumAccuracy / totalQuestions).toFixed(1)),
+                clarity: parseFloat((sumClarity / totalQuestions).toFixed(1)),
+                structure: parseFloat((sumStructure / totalQuestions).toFixed(1)),
+                completeness: parseFloat((sumCompleteness / totalQuestions).toFixed(1)),
+                confidence: parseFloat((sumConfidence / totalQuestions).toFixed(1)),
+            };
+
             await interview.save();
 
             // Auto-ingest into Tess memory vault
@@ -71,29 +130,49 @@ export const submitAnswer = async (req , res) => {
             });
 
             return res.status(200).json({
-                completed:true,
-                message: "interview completed",
-                interview
-            })
-        }  
+                completed: true,
+                message: "Interview completed",
+                interview,
+                evaluation
+            });
+        }
 
-        // if the interview is not finsished still save the interview in the dagtabse 
         await interview.save();
-        // returning the next question and updated interview in the response
+
         return res.status(200).json({
-            completed:false,
+            completed: false,
             interview,
+            evaluation,
             nextQuestion: interview.questions[interview.currentQuestionIndex]
-        })
+        });
 
-    }
-    catch(error) {
+    } catch (error) {
+        console.error("Submit answer error:", error);
         return res.status(500).json({
-            success:false,
-            message: "error in submitting the answer",
+            success: false,
+            message: "Error submitting the answer",
+            error: error.message,
             data: {}
-        })
+        });
     }
-}
+};
 
+// Get past interviews and overall analytics for the user
+export const getUserInterviews = async (req, res) => {
+    try {
+        const userId = req.user?._id;
+        const interviews = await Interview.find({ user: userId }).sort({ createdAt: -1 });
 
+        return res.status(200).json({
+            success: true,
+            data: interviews
+        });
+    } catch (error) {
+        console.error("Get user interviews error:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch interviews",
+            error: error.message
+        });
+    }
+};

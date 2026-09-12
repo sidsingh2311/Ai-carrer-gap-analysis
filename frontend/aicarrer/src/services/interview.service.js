@@ -9,3 +9,9 @@ export const submitAnswer = async (answerData) => {
   const response = await api.post('/interview/answer', answerData);
   return response.data;
 };
+
+export const getUserInterviews = async () => {
+  const response = await api.get('/interview/history');
+  return response.data;
+};
+

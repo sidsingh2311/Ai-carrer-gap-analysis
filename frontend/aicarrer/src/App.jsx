@@ -10,6 +10,8 @@ import ResumeAnalysis from './pages/Resume/ResumeAnalysis';
 import QuizPage from './pages/Quiz/QuizPage';
 import ProgressTracker from './pages/Progress/ProgressTracker';
 import InterviewPage from './pages/Interview/InterviewPage';
+import CareerPlanPage from './pages/CareerPlan/CareerPlanPage';
+import ApplicationTracker from './pages/Applications/ApplicationTracker';
 import TessPage from './pages/Tess/TessPage';
 import TessFloatingWidget from './components/TessFloatingWidget';
 import { Zap, MapPin } from 'lucide-react';
@@ -53,6 +55,18 @@ function App() {
               <Route path="/quiz" element={
                 <ProtectedRoute>
                   <QuizPage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/career-plan" element={
+                <ProtectedRoute>
+                  <CareerPlanPage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/applications" element={
+                <ProtectedRoute>
+                  <ApplicationTracker />
                 </ProtectedRoute>
               } />
 

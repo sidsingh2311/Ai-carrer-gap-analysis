@@ -8,6 +8,9 @@ import quizResultsRoutes from "./src/routes/quizResult.routes.js"
 import progressRoutes from "./src/routes/progress.routes.js"
 import interviewRoutes from "./src/routes/interview.routes.js"
 import tessRoutes from "./src/routes/tess.routes.js"
+import careerPlanRoutes from "./src/routes/careerPlan.routes.js"
+import applicationRoutes from "./src/routes/application.routes.js"
+import { errorHandler } from "./src/middlewares/error.middleware.js"
 
 // creating an instance of the express
 const app = express();
@@ -30,6 +33,10 @@ app.use("/api/quiz-result",quizResultsRoutes);
 app.use("/api/progress",progressRoutes);
 app.use("/api/interview",interviewRoutes);
 app.use("/api/tess",tessRoutes);
+app.use("/api/career-plan",careerPlanRoutes);
+app.use("/api/applications",applicationRoutes);
 
+// Global Error Handler
+app.use(errorHandler);
 
 export {app};
