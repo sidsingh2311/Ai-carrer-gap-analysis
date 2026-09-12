@@ -10,6 +10,8 @@ import ResumeAnalysis from './pages/Resume/ResumeAnalysis';
 import QuizPage from './pages/Quiz/QuizPage';
 import ProgressTracker from './pages/Progress/ProgressTracker';
 import InterviewPage from './pages/Interview/InterviewPage';
+import TessPage from './pages/Tess/TessPage';
+import TessFloatingWidget from './components/TessFloatingWidget';
 import { Zap, MapPin } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
@@ -33,6 +35,12 @@ function App() {
               <Route path="/dashboard" element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/tess" element={
+                <ProtectedRoute>
+                  <TessPage />
                 </ProtectedRoute>
               } />
               
@@ -61,6 +69,9 @@ function App() {
               } />
             </Routes>
           </main>
+
+          {/* Global Floating AI Copilot Widget */}
+          <TessFloatingWidget />
           
           <footer className="py-8 bg-white border-t border-gray-200 px-6">
              <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">

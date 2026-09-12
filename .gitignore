@@ -5,8 +5,10 @@ frontend/node_modules
 
 # Environment files
 .env
+*.env
 backend/.env
 frontend/.env
+frontend/aicarrer/.env
 
 # Logs
 logs

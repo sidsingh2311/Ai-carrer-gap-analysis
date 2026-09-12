@@ -3,6 +3,7 @@ import {
   generateQuestions,
   evaluateAnswer,
 } from "../services/interview.service.js"; 
+import { ingestInterviewResult } from "../services/tess.service.js"; 
  
 // creating the function of starting the interview 
 export const startInterview = async (req , res) => {
@@ -63,6 +64,12 @@ export const submitAnswer = async (req , res) => {
             interview.status = "completed"
             // savking the current interview state in the databse 
             await interview.save();
+
+            // Auto-ingest into Tess memory vault
+            ingestInterviewResult(interview.user, interview).catch((err) => {
+                console.error("Tess interview memory ingestion error:", err);
+            });
+
             return res.status(200).json({
                 completed:true,
                 message: "interview completed",

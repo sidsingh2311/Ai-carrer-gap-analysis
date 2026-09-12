@@ -1,4 +1,5 @@
 import QuizResult from "../models/quizresult.model.js"
+import { ingestQuizResult } from "../services/tess.service.js";
 
 // creating the function to save the result 
 export const saveQuizResultController = async (req , res) => {
@@ -18,12 +19,26 @@ export const saveQuizResultController = async (req , res) => {
             user:userId,
             score,
             totalQuestions,
+            percentage,
             answers,
             role,
             company,
             skills,
             feedback
          }) 
+
+         // Auto-ingest quiz into Tess memory vault
+         ingestQuizResult(userId, {
+            score,
+            totalQuestions,
+            percentage,
+            role,
+            company,
+            skills,
+            feedback
+         }).catch((err) => {
+            console.error("Tess quiz memory ingestion background error:", err);
+         });
 
          return res.status(200).json({
             success:true,

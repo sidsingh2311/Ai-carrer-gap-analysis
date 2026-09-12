@@ -24,7 +24,7 @@ Return strictly in JSON format:
 
   try {
     const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: "qwen/qwen3.8-27b",
       messages: [
         { role: "system", content: "You generate technical interview quizzes." },
         { role: "user", content: prompt },

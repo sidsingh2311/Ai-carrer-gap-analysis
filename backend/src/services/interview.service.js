@@ -23,7 +23,7 @@ Return ONLY JSON format:
 
   const res = await groq.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
+    model: "qwen/qwen3.8-27b",
   });
 
   return JSON.parse(extractJSON(res.choices[0].message.content));
@@ -45,7 +45,7 @@ Return ONLY JSON format:
 
   const res = await groq.chat.completions.create({
     messages: [{ role: "user", content: prompt }],
-    model: "llama-3.3-70b-versatile",
+    model: "qwen/qwen3.8-27b",
   });
 
   return JSON.parse(extractJSON(res.choices[0].message.content));

@@ -11,6 +11,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import TessDashboardCard from '../../components/TessDashboardCard';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -47,7 +48,7 @@ const Dashboard = () => {
   const cards = [
     { 
       title: 'Current Efficiency', 
-      value: stats?.overallPercentage ? `${stats.overallPercentage.toFixed(1)}%` : '0%', 
+      value: stats?.overallPercentage !== undefined ? `${Number(stats.overallPercentage || 0).toFixed(1)}%` : '0%', 
       icon: Trophy, 
       color: 'text-blue-600',
       bg: 'bg-blue-50',
@@ -63,7 +64,7 @@ const Dashboard = () => {
     },
     { 
       title: 'Apex Performance', 
-      value: stats?.highestscore ? `${stats.highestscore}%` : '0%', 
+      value: stats?.highestscore !== undefined ? `${Number(stats.highestscore || 0).toFixed(1)}%` : '0%', 
       icon: Target, 
       color: 'text-teal-600',
       bg: 'bg-teal-50',
@@ -96,6 +97,9 @@ const Dashboard = () => {
            <span className="text-sm font-medium text-gray-600">System Online</span>
         </div>
       </header>
+
+      {/* Tess AI Copilot Suggestions Hero Card */}
+      <TessDashboardCard />
 
       {/* Grid Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -39,4 +39,23 @@ const verifyJWT = async (req , res , next) => {
     }
 } 
 
-export {verifyJWT}
+// Optional JWT verification - doesn't block if token missing or invalid, but attaches req.user if valid
+const optionalVerifyJWT = async (req, res, next) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            const token = authHeader.split(" ")[1];
+            const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+            const user = await User.findById(decodedToken?._id).select("-password");
+            if (user) {
+                req.user = user;
+            }
+        }
+        next();
+    } catch (error) {
+        // Proceed without user
+        next();
+    }
+};
+
+export { verifyJWT, optionalVerifyJWT };

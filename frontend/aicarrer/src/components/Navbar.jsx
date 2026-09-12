@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FileText, BrainCircuit, LineChart, LogOut, Menu, X, Video } from 'lucide-react';
+import { LayoutDashboard, FileText, BrainCircuit, LineChart, LogOut, Menu, X, Video, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 const Navbar = () => {
@@ -11,6 +11,7 @@ const Navbar = () => {
 
   const navLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Tess AI', path: '/tess', icon: Sparkles, badge: 'Copilot' },
     { name: 'Resume AI', path: '/resume', icon: FileText },
     { name: 'Quiz Gen', path: '/quiz', icon: BrainCircuit },
     { name: 'AI Interview', path: '/interview', icon: Video },
@@ -39,12 +40,17 @@ const Navbar = () => {
               to={link.path}
               className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
                 location.pathname === link.path 
-                  ? 'bg-blue-50 text-blue-700' 
+                  ? 'bg-indigo-50 text-indigo-700' 
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <link.icon className={`w-4 h-4 ${location.pathname === link.path ? 'text-blue-600' : 'text-gray-400'}`} />
+              <link.icon className={`w-4 h-4 ${location.pathname === link.path ? 'text-indigo-600' : link.badge ? 'text-indigo-500' : 'text-gray-400'}`} />
               <span>{link.name}</span>
+              {link.badge && (
+                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-2xs">
+                  {link.badge}
+                </span>
+              )}
             </Link>
           ))}
 

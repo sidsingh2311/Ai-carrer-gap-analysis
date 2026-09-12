@@ -1,6 +1,7 @@
 import Groq from "groq-sdk";
 import extractTextFromPDF from "../utils/pdfParser.js";
 import fs from "fs";
+import { ingestResumeAnalysis } from "../services/tess.service.js";
 
 const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY
@@ -118,7 +119,7 @@ Rules:
 
         const chatCompletion = await groq.chat.completions.create({
             messages: [{ role: "user", content: prompt }],
-            model: "llama-3.3-70b-versatile",
+            model: "qwen/qwen3.8-27b",
             response_format: { type: "json_object" }
         });
 
@@ -137,6 +138,13 @@ Rules:
                 success: false,
                 message: data.rejectionReason || "The uploaded document does not appear to be a professional resume.",
                 isInvalidContent: true
+            });
+        }
+
+        // Auto-ingest into Tess memory if user is authenticated
+        if (req.user?._id) {
+            ingestResumeAnalysis(req.user._id, targetRole, companyName, data).catch((err) => {
+                console.error("Tess resume memory ingestion background error:", err);
             });
         }
 
